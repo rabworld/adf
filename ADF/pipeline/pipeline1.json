@@ -29,21 +29,17 @@
 						}
 					},
 					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "inputDataDataset",
-						"type": "DatasetReference"
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "outputDataDataset",
-						"type": "DatasetReference"
-					}
-				]
+				}
 			}
 		],
+		"parameters": {
+			"SourcePath": {
+				"type": "string"
+			},
+			"SourceFile": {
+				"type": "string"
+			}
+		},
 		"annotations": []
 	}
 }
