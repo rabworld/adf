@@ -7,6 +7,14 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "my-firstDF"
 		},
+		"ParameterizedLinkedService_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ParameterizedLinkedService'"
+		},
+		"linkedservice2_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'linkedservice2'"
+		},
 		"linkedservice_storage_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'linkedservice_storage'"
@@ -37,6 +45,12 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"ParameterizedLinkedService_connectionString": {
+						"value": "[parameters('ParameterizedLinkedService_connectionString')]"
+					},
+					"linkedservice2_connectionString": {
+						"value": "[parameters('linkedservice2_connectionString')]"
 					},
 					"linkedservice_storage_connectionString": {
 						"value": "[parameters('linkedservice_storage_connectionString')]"

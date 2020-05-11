@@ -5,6 +5,12 @@
 		"factoryName": {
 			"value": "my-firstDF"
 		},
+		"ParameterizedLinkedService_connectionString": {
+			"value": ""
+		},
+		"linkedservice2_connectionString": {
+			"value": ""
+		},
 		"linkedservice_storage_connectionString": {
 			"value": ""
 		},

@@ -7,6 +7,14 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "my-firstDF"
 		},
+		"ParameterizedLinkedService_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ParameterizedLinkedService'"
+		},
+		"linkedservice2_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'linkedservice2'"
+		},
 		"linkedservice_storage_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'linkedservice_storage'"
@@ -17,14 +25,14 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"name": "[concat(parameters('factoryName'), '/deletepipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "Copy data1",
-						"type": "Copy",
+						"name": "Delete1",
+						"type": "Delete",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "7.00:00:00",
@@ -33,72 +41,43 @@
 							"secureOutput": false,
 							"secureInput": false
 						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "BinarySource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true
-								}
-							},
-							"sink": {
-								"type": "BinarySink",
-								"storeSettings": {
-									"type": "AzureBlobStorageWriteSettings"
-								}
-							},
-							"enableStaging": false
-						},
-						"inputs": [
+						"userProperties": [
 							{
-								"referenceName": "inputDataDataset",
-								"type": "DatasetReference",
-								"parameters": {}
+								"name": "FilesDelete",
+								"value": "successfully txt files deleted"
 							}
 						],
-						"outputs": [
-							{
-								"referenceName": "outputDataDataset",
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "outputFolderDataset",
 								"type": "DatasetReference",
 								"parameters": {}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "linkedservice_storage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "adfcontainer/output"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"wildcardFileName": "\".txt\""
 							}
-						]
+						}
 					}
 				],
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/inputDataDataset')]",
-				"[concat(variables('factoryId'), '/datasets/outputDataDataset')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/inputDataDataset')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "linkedservice_storage",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Binary",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "data.txt",
-						"folderPath": "input",
-						"container": "adfcontainer"
-					}
-				}
-			},
-			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/outputFolderDataset')]",
 				"[concat(variables('factoryId'), '/linkedServices/linkedservice_storage')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/outputDataDataset')]",
+			"name": "[concat(parameters('factoryName'), '/outputFolderDataset')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -111,7 +90,6 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobStorageLocation",
-						"fileName": "data1.txt",
 						"folderPath": "output",
 						"container": "adfcontainer"
 					}
@@ -120,6 +98,46 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/linkedservice_storage')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ParameterizedLinkedService')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"severName": {
+						"type": "string"
+					},
+					"databaseName": {
+						"type": "string"
+					},
+					"userName": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('ParameterizedLinkedService_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/linkedservice2')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('linkedservice2_connectionString')]"
+				}
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/linkedservice_storage')]",
