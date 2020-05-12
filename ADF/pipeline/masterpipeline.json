@@ -3,78 +3,51 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "ForEach1",
-				"type": "ForEach",
+				"name": "Get Metadata1",
+				"type": "GetMetadata",
 				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
-					"items": {
-						"value": "@pipeline().parameters.OutputFolders",
-						"type": "Expression"
+					"dataset": {
+						"referenceName": "inputDataset",
+						"type": "DatasetReference"
 					},
-					"isSequential": true,
-					"activities": [
-						{
-							"name": "Copy data1",
-							"type": "Copy",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "7.00:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "BinarySource",
-									"storeSettings": {
-										"type": "AzureBlobStorageReadSettings",
-										"recursive": true
-									}
-								},
-								"sink": {
-									"type": "BinarySink",
-									"storeSettings": {
-										"type": "AzureBlobStorageWriteSettings"
-									}
-								},
-								"enableStaging": false
-							},
-							"inputs": [
-								{
-									"referenceName": "inputDataset",
-									"type": "DatasetReference"
-								}
-							],
-							"outputs": [
-								{
-									"referenceName": "outputFolderDataset",
-									"type": "DatasetReference",
-									"parameters": {
-										"FolderName": {
-											"value": "@item()",
-											"type": "Expression"
-										}
-									}
-								}
-							]
-						}
-					]
+					"fieldList": [
+						"lastModified"
+					],
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true
+					}
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Get Metadata1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(formatDateTime(utcnow(),'yyyy-MM-dd'),formatDateTime(activity('Get Metadata1').output.lastModified,'yyyy-MM-dd'))",
+						"type": "Expression"
+					}
 				}
 			}
 		],
-		"parameters": {
-			"OutputFolders": {
-				"type": "array",
-				"defaultValue": [
-					"output1",
-					"output2",
-					"output3"
-				]
-			}
-		},
 		"annotations": []
 	}
 }
