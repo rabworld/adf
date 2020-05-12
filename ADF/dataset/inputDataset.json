@@ -1,0 +1,19 @@
+{
+	"name": "inputDataset",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "linkedservice_storage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "data.txt",
+				"folderPath": "input",
+				"container": "adfcontainer"
+			}
+		}
+	}
+}
