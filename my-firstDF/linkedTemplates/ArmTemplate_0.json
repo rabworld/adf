@@ -110,20 +110,12 @@
 					"referenceName": "linkedservice_storage",
 					"type": "LinkedServiceReference"
 				},
-				"parameters": {
-					"FolderName": {
-						"type": "string"
-					}
-				},
 				"annotations": [],
 				"type": "Binary",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobStorageLocation",
-						"folderPath": {
-							"value": "@dataset().FolderName",
-							"type": "Expression"
-						},
+						"folderPath": "output1",
 						"container": "adfcontainer"
 					}
 				}
@@ -181,14 +173,60 @@
 							"expression": {
 								"value": "@equals(formatDateTime(utcnow(),'yyyy-MM-dd'),formatDateTime(activity('Get Metadata1').output.lastModified,'yyyy-MM-dd'))",
 								"type": "Expression"
-							}
+							},
+							"ifTrueActivities": [
+								{
+									"name": "Copy data1",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "BinarySource",
+											"storeSettings": {
+												"type": "AzureBlobStorageReadSettings",
+												"recursive": true
+											}
+										},
+										"sink": {
+											"type": "BinarySink",
+											"storeSettings": {
+												"type": "AzureBlobStorageWriteSettings"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "inputDataset",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "outputFolderDataset",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									]
+								}
+							]
 						}
 					}
 				],
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/inputDataset')]"
+				"[concat(variables('factoryId'), '/datasets/inputDataset')]",
+				"[concat(variables('factoryId'), '/datasets/outputFolderDataset')]"
 			]
 		}
 	]
