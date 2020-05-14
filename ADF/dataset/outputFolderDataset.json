@@ -5,12 +5,20 @@
 			"referenceName": "linkedservice_storage",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"Folder": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "Binary",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"folderPath": "output1",
+				"folderPath": {
+					"value": "@dataset().Folder",
+					"type": "Expression"
+				},
 				"container": "adfcontainer"
 			}
 		}
