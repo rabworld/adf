@@ -8,6 +8,9 @@
 		"ParameterizedLinkedService_connectionString": {
 			"value": ""
 		},
+		"SqlServerLocationlinkelist_connectionString": {
+			"value": ""
+		},
 		"linkedservice2_connectionString": {
 			"value": ""
 		},

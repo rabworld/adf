@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ParameterizedLinkedService'"
 		},
+		"SqlServerLocationlinkelist_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'SqlServerLocationlinkelist'"
+		},
 		"linkedservice2_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'linkedservice2'"
@@ -48,6 +52,9 @@
 					},
 					"ParameterizedLinkedService_connectionString": {
 						"value": "[parameters('ParameterizedLinkedService_connectionString')]"
+					},
+					"SqlServerLocationlinkelist_connectionString": {
+						"value": "[parameters('SqlServerLocationlinkelist_connectionString')]"
 					},
 					"linkedservice2_connectionString": {
 						"value": "[parameters('linkedservice2_connectionString')]"

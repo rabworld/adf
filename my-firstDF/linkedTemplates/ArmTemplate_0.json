@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ParameterizedLinkedService'"
 		},
+		"SqlServerLocationlinkelist_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'SqlServerLocationlinkelist'"
+		},
 		"linkedservice2_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'linkedservice2'"
@@ -52,6 +56,19 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/SqlServerLocationlinkelist')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('SqlServerLocationlinkelist_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/linkedservice2')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -76,6 +93,138 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DepartDataset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linkedservice_storage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "dept.csv",
+						"folderPath": "input",
+						"container": "adfcontainer"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "depid",
+						"type": "String"
+					},
+					{
+						"name": "depname",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/linkedservice_storage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/EmployeeDataset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linkedservice_storage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "employee.csv",
+						"folderPath": "input",
+						"container": "adfcontainer"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "empid",
+						"type": "String"
+					},
+					{
+						"name": "name",
+						"type": "String"
+					},
+					{
+						"name": "country",
+						"type": "String"
+					},
+					{
+						"name": "department",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/linkedservice_storage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/OutputJoinDataset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linkedservice_storage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "output2",
+						"container": "adfcontainer"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/linkedservice_storage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SqlServerDataset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "SqlServerLocationlinkelist",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "mytable63"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/SqlServerLocationlinkelist')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/inputDataset')]",
@@ -110,12 +259,20 @@
 					"referenceName": "linkedservice_storage",
 					"type": "LinkedServiceReference"
 				},
+				"parameters": {
+					"Folder": {
+						"type": "string"
+					}
+				},
 				"annotations": [],
 				"type": "Binary",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobStorageLocation",
-						"folderPath": "output1",
+						"folderPath": {
+							"value": "@dataset().Folder",
+							"type": "Expression"
+						},
 						"container": "adfcontainer"
 					}
 				}
@@ -125,14 +282,14 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/masterpipeline')]",
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "Get Metadata1",
-						"type": "GetMetadata",
+						"name": "Lookup1",
+						"type": "Lookup",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "7.00:00:00",
@@ -143,26 +300,24 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "select*frommytable",
+								"queryTimeout": "02:00:00"
+							},
 							"dataset": {
-								"referenceName": "inputDataset",
+								"referenceName": "SqlServerDataset",
 								"type": "DatasetReference",
 								"parameters": {}
-							},
-							"fieldList": [
-								"lastModified"
-							],
-							"storeSettings": {
-								"type": "AzureBlobStorageReadSettings",
-								"recursive": true
 							}
 						}
 					},
 					{
-						"name": "If Condition1",
-						"type": "IfCondition",
+						"name": "ForEach1",
+						"type": "ForEach",
 						"dependsOn": [
 							{
-								"activity": "Get Metadata1",
+								"activity": "Lookup1",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -170,11 +325,12 @@
 						],
 						"userProperties": [],
 						"typeProperties": {
-							"expression": {
-								"value": "@equals(formatDateTime(utcnow(),'yyyy-MM-dd'),formatDateTime(activity('Get Metadata1').output.lastModified,'yyyy-MM-dd'))",
+							"items": {
+								"value": "@activity('Lookup1').output.value",
 								"type": "Expression"
 							},
-							"ifTrueActivities": [
+							"isSequential": true,
+							"activities": [
 								{
 									"name": "Copy data1",
 									"type": "Copy",
@@ -214,7 +370,12 @@
 										{
 											"referenceName": "outputFolderDataset",
 											"type": "DatasetReference",
-											"parameters": {}
+											"parameters": {
+												"Folder": {
+													"value": "@item()",
+													"type": "Expression"
+												}
+											}
 										}
 									]
 								}
@@ -225,8 +386,55 @@
 				"annotations": []
 			},
 			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SqlServerDataset')]",
 				"[concat(variables('factoryId'), '/datasets/inputDataset')]",
 				"[concat(variables('factoryId'), '/datasets/outputFolderDataset')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "EmployeeDataset",
+								"type": "DatasetReference"
+							},
+							"name": "EmployeeData"
+						},
+						{
+							"dataset": {
+								"referenceName": "DepartDataset",
+								"type": "DatasetReference"
+							},
+							"name": "DepartmentData"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "OutputJoinDataset",
+								"type": "DatasetReference"
+							},
+							"name": "OutputData"
+						}
+					],
+					"transformations": [
+						{
+							"name": "JoinEmpDeptData"
+						}
+					],
+					"script": "source(output(\n\t\tempid as string,\n\t\tname as string,\n\t\tcountry as string,\n\t\tdepartment as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> EmployeeData\nsource(output(\n\t\tdepid as string,\n\t\tdepname as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> DepartmentData\nEmployeeData, DepartmentData join(department == depid,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinEmpDeptData\nJoinEmpDeptData sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['empanddepData  '],\n\tmapColumn(\n\t\tempid,\n\t\tEmpName = name,\n\t\tcountry,\n\t\tdepname\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> OutputData"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/EmployeeDataset')]",
+				"[concat(variables('factoryId'), '/datasets/DepartDataset')]",
+				"[concat(variables('factoryId'), '/datasets/OutputJoinDataset')]"
 			]
 		}
 	]
