@@ -95,6 +95,41 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DepartmentDataSet')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linkedservice_storage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "dept.csv",
+						"folderPath": "input",
+						"container": "adfcontainer"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/linkedservice_storage')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/EmployeeDataset')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -256,7 +291,7 @@
 								"referenceName": "EmployeeDataset",
 								"type": "DatasetReference"
 							},
-							"name": "source1"
+							"name": "Employees"
 						}
 					],
 					"sinks": [
@@ -273,7 +308,7 @@
 							"name": "AggregateOnDep"
 						}
 					],
-					"script": "source(output(\n\t\tempid as string,\n\t\tname as string,\n\t\tcountry as string,\n\t\tdepartment as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> source1\nsource1 aggregate(groupBy(department),\n\tTotalEmployees = count( empid)) ~> AggregateOnDep\nAggregateOnDep sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['TotalEmpbyDep.csv'],\n\tmapColumn(\n\t\tDepId = department,\n\t\tTotalEmployees\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1"
+					"script": "source(output(\n\t\tempid as string,\n\t\tname as string,\n\t\tcountry as string,\n\t\tdepartment as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> Employees\nEmployees aggregate(groupBy(department),\n\tTotalEmployees = count( empid)) ~> AggregateOnDep\nAggregateOnDep sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['TotalEmpbyDep.csv'],\n\tmapColumn(\n\t\tDepId = department,\n\t\tTotalEmployees\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1"
 				}
 			},
 			"dependsOn": [
@@ -343,7 +378,7 @@
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"source1": {},
+									"Employees": {},
 									"sink1": {}
 								}
 							},
