@@ -24,12 +24,9 @@
 			"transformations": [
 				{
 					"name": "AggregateOnDep"
-				},
-				{
-					"name": "Join1"
 				}
 			],
-			"script": "source(output(\n\t\tempid as string,\n\t\tname as string,\n\t\tcountry as string,\n\t\tdepartment as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> Employees\nEmployees aggregate(groupBy(department),\n\tTotalEmployees = count( empid)) ~> AggregateOnDep\nAggregateOnDep join(department == ERROR_FUNCTION(''),\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> Join1\nJoin1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['TotalEmpbyDep.csv'],\n\tmapColumn(\n\t\tDepId = department,\n\t\tTotalEmployees\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1"
+			"script": "source(output(\n\t\tempid as string,\n\t\tname as string,\n\t\tcountry as string,\n\t\tdepartment as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> Employees\nEmployees aggregate(groupBy(department),\n\tTotalEmployees = count( empid)) ~> AggregateOnDep\nAggregateOnDep sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['TotalEmpbyDep.csv'],\n\tmapColumn(\n\t\tDepId = department,\n\t\tTotalEmployees\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1"
 		}
 	}
 }
