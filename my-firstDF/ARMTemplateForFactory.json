@@ -71,6 +71,50 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ConditionSplitpipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CondtionBasedSplitDataFlow",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow1",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"AllEmployees": {},
+									"ITempout": {},
+									"HREmpout": {},
+									"PayrollOut": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/PayrollDatapipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -393,6 +437,58 @@
 						}
 					],
 					"script": "source(output(\n\t\tempid as string,\n\t\tname as string,\n\t\tcountry as string,\n\t\tdepartment as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> Employees\nEmployees aggregate(groupBy(department),\n\tTotalEmployees = count( empid)) ~> AggregateOnDep\nAggregateOnDep sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['TotalEmpbyDep.csv'],\n\tmapColumn(\n\t\tDepId = department,\n\t\tTotalEmployees\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/EmployeeDataset')]",
+				"[concat(variables('factoryId'), '/datasets/OutputJoinDataset')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "EmployeeDataset",
+								"type": "DatasetReference"
+							},
+							"name": "AllEmployees"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "OutputJoinDataset",
+								"type": "DatasetReference"
+							},
+							"name": "ITempout"
+						},
+						{
+							"dataset": {
+								"referenceName": "OutputJoinDataset",
+								"type": "DatasetReference"
+							},
+							"name": "HREmpout"
+						},
+						{
+							"dataset": {
+								"referenceName": "OutputJoinDataset",
+								"type": "DatasetReference"
+							},
+							"name": "PayrollOut"
+						}
+					],
+					"transformations": [
+						{
+							"name": "SplitBasedOnDep"
+						}
+					],
+					"script": "source(output(\n\t\tempid as string,\n\t\tname as string,\n\t\tcountry as string,\n\t\tdepartment as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> AllEmployees\nAllEmployees split(equals(department,'1'),\n\tequals(department,'2'),\n\tequals(department,'3'),\n\tdisjoint: false) ~> SplitBasedOnDep@(ITEmployees, HREmployees, PayrollEmployees)\nSplitBasedOnDep@ITEmployees sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['ITemp.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> ITempout\nSplitBasedOnDep@HREmployees sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['HREmp.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> HREmpout\nSplitBasedOnDep@PayrollEmployees sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['PayrollEmp.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> PayrollOut"
 				}
 			},
 			"dependsOn": [
