@@ -95,44 +95,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DepartDataset')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "linkedservice_storage",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "dept.csv",
-						"folderPath": "input",
-						"container": "adfcontainer"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "depid",
-						"type": "String"
-					},
-					{
-						"name": "depname",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/linkedservice_storage')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/EmployeeDataset')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -282,7 +244,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/EmpDepDataFlow')]",
+			"name": "[concat(parameters('factoryName'), '/filterpayrollemployee')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -294,14 +256,7 @@
 								"referenceName": "EmployeeDataset",
 								"type": "DatasetReference"
 							},
-							"name": "EmployeeData"
-						},
-						{
-							"dataset": {
-								"referenceName": "DepartDataset",
-								"type": "DatasetReference"
-							},
-							"name": "DepartmentData"
+							"name": "Employees"
 						}
 					],
 					"sinks": [
@@ -310,31 +265,30 @@
 								"referenceName": "OutputJoinDataset",
 								"type": "DatasetReference"
 							},
-							"name": "OutputData"
+							"name": "PayrollEmpData"
 						}
 					],
 					"transformations": [
 						{
-							"name": "JoinEmpDeptData"
+							"name": "FilterPayrollDep"
 						}
 					],
-					"script": "source(output(\n\t\tempid as string,\n\t\tname as string,\n\t\tcountry as string,\n\t\tdepartment as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> EmployeeData\nsource(output(\n\t\tdepid as string,\n\t\tdepname as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> DepartmentData\nEmployeeData, DepartmentData join(department == depid,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinEmpDeptData\nJoinEmpDeptData sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['empanddepData  '],\n\tmapColumn(\n\t\tempid,\n\t\tEmpName = name,\n\t\tcountry,\n\t\tdepname\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> OutputData"
+					"script": "source(output(\n\t\tempid as string,\n\t\tname as string,\n\t\tcountry as string,\n\t\tdepartment as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> Employees\nEmployees filter(equals(department,'3')) ~> FilterPayrollDep\nFilterPayrollDep sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['payrollEmp.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> PayrollEmpData"
 				}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/EmployeeDataset')]",
-				"[concat(variables('factoryId'), '/datasets/DepartDataset')]",
 				"[concat(variables('factoryId'), '/datasets/OutputJoinDataset')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"name": "[concat(parameters('factoryName'), '/PayrollDatapipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "EmpDepDataFlow",
+						"name": "filterpayrollemployee",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
@@ -347,13 +301,12 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "EmpDepDataFlow",
+								"referenceName": "filterpayrollemployee",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"EmployeeData": {},
-									"DepartmentData": {},
-									"OutputData": {}
+									"Employees": {},
+									"PayrollEmpData": {}
 								}
 							},
 							"staging": {},
@@ -367,7 +320,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/EmpDepDataFlow')]"
+				"[concat(variables('factoryId'), '/dataflows/filterpayrollemployee')]"
 			]
 		}
 	]
