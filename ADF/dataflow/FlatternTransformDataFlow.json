@@ -1,24 +1,27 @@
 {
-	"name": "PivoutTransformDataFlow",
+	"name": "FlatternTransformDataFlow",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "EmployeeDataset",
+						"referenceName": "JsonDataset",
 						"type": "DatasetReference"
 					},
-					"name": "Employees"
+					"name": "Emp"
 				}
 			],
 			"sinks": [],
 			"transformations": [
 				{
-					"name": "Pivot1"
+					"name": "Flatten1"
+				},
+				{
+					"name": "Flatten2"
 				}
 			],
-			"script": "source(output(\n\t\tempid as string,\n\t\tname as string,\n\t\tcountry as string,\n\t\tdepartment as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> Employees\nEmployees pivot(groupBy(department),\n\tcolumnNaming: '$N$V',\n\tlateral: true) ~> Pivot1"
+			"script": "source(output(\n\t\tid as string,\n\t\tname as string,\n\t\tskills as string[]\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> Emp\nFlatten2 foldDown(skipDuplicateMapInputs: false,\n\tskipDuplicateMapOutputs: false) ~> Flatten1\nEmp foldDown(skipDuplicateMapInputs: false,\n\tskipDuplicateMapOutputs: false) ~> Flatten2"
 		}
 	}
 }

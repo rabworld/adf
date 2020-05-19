@@ -1,0 +1,36 @@
+{
+	"name": "JsonDataset",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "linkedservice_storage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "Emp.json",
+				"folderPath": "input",
+				"container": "adfcontainer"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"skills": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				}
+			}
+		}
+	}
+}

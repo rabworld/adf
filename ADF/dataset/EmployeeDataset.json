@@ -33,6 +33,10 @@
 				"type": "String"
 			},
 			{
+				"name": "gender",
+				"type": "String"
+			},
+			{
 				"name": "department",
 				"type": "String"
 			}
