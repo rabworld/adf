@@ -1,0 +1,24 @@
+{
+	"name": "PivoutTransformDataFlow",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "EmployeeDataset",
+						"type": "DatasetReference"
+					},
+					"name": "Employees"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "Pivot1"
+				}
+			],
+			"script": "source(output(\n\t\tempid as string,\n\t\tname as string,\n\t\tcountry as string,\n\t\tdepartment as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> Employees\nEmployees pivot(groupBy(department),\n\tcolumnNaming: '$N$V',\n\tlateral: true) ~> Pivot1"
+		}
+	}
+}
