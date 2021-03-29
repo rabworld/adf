@@ -1,0 +1,9 @@
+{
+	"name": "dataengdf",
+	"location": "northeurope",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "2aba4394-8821-4e26-a71b-88f05ee6e199",
+		"tenantId": "da0b73b5-198b-4955-9378-cb9d15848294"
+	}
+}
