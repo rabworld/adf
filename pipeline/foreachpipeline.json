@@ -85,7 +85,7 @@
 		"parameters": {
 			"folderName": {
 				"type": "array",
-				"defaultValue": "[output1,output2]"
+				"defaultValue": "['output1', 'output2']"
 			}
 		},
 		"annotations": []
