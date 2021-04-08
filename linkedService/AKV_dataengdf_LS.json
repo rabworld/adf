@@ -1,0 +1,10 @@
+{
+	"name": "AKV_dataengdf_LS",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://DataEng-KV.vault.azure.net/"
+		}
+	}
+}
